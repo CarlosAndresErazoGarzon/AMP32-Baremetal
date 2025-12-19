@@ -6,6 +6,7 @@ build/
 *.map
 *.o
 *.d
+flash.log
 
 # Archivos de sistema y editor
 .DS_Store
