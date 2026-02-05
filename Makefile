@@ -52,23 +52,26 @@ CFLAGS = -mcpu=cortex-m3 -mthumb -std=gnu11 -g -O0 -Wall \
 LDFLAGS = -mcpu=cortex-m3 -mthumb -T$(LDSCRIPT) \
           -Wl,--gc-sections --specs=nosys.specs -Wl,-Map=$(BUILD_DIR)/firmware.map
 
+# --- Configuración OpenOCD ---
+OPENOCD_CFG = apm32_daplink.cfg
+
 # --- Targets ---
 
 all: $(BUILD_DIR)/firmware.elf $(BUILD_DIR)/firmware.bin
 
-# 1. Compilar C (Usuario)
+# Compilar C (Usuario)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando Usuario: $<"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-# 2. Compilar C (SDK)
+# Compilar C (SDK)
 $(BUILD_DIR)/%.o: $(SDK_SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
 	@echo "Compilando SDK: $<"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-# 3. Ensamblar Startup
+# Ensamblar Startup
 $(BUILD_DIR)/startup.o: $(STARTUP_SRC)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Ensamblando Startup..."
@@ -87,12 +90,15 @@ $(BUILD_DIR)/firmware.bin: $(BUILD_DIR)/firmware.elf
 	@$(OBJCOPY) -O binary $< $@
 
 clean:
+	@echo "Limpiando ..."
 	rm -rf $(BUILD_DIR)
 
 flash: all
-	@openocd -f openocd.cfg -c "program $(BUILD_DIR)/firmware.elf verify reset exit"
+	@echo "Flasheando APM32..."
+	@openocd -f apm32_daplink.cfg -c "program $(BUILD_DIR)/firmware.elf verify reset exit"
 
 info:
-	openocd -f openocd.cfg -c "init; reset halt; flash probe 0; exit"
+	@echo "INFO APM32..."
+	@openocd -f apm32_daplink.cfg -c "init; reset halt; flash probe 0; exit"
 
 .PHONY: all clean flash
